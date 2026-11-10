@@ -1,0 +1,872 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="China Metric Table">
+<meta name="theme-color" content="#0f172a">
+<title>China Metric Table</title>
+<style>
+  /* ---------- THEME TOKENS ---------- */
+  :root {
+    /* Night (default) */
+    --bg-page: #0f172a;
+    --bg-card: #1e293b;
+    --bg-inset: #0f172a;
+    --bg-inset-alt: #1e293b;
+    --bg-elevated: #334155;
+    --bg-elevated-hover: #475569;
+    --border-subtle: #334155;
+    --border-strong: #475569;
+    --text-primary: #f1f5f9;
+    --text-secondary: #94a3b8;
+    --text-muted: #64748b;
+    --text-faint: #475569;
+    --accent: #3b82f6;
+    --accent-soft: #93c5fd;
+    --accent-glow: rgba(147, 197, 253, 0.25);
+    --value-ft: #93c5fd;
+    --value-ft-unit: #bfdbfe;
+    --value-fl: #93c5fd;
+    --value-dash: #475569;
+    --west-bg: #422006; --west-fg: #fbbf24; --west-bd: #78350f;
+    --east-bg: #022c22; --east-fg: #34d399; --east-bd: #065f46;
+    --none-bg: #334155; --none-fg: #94a3b8; --none-bd: #475569;
+    --invalid-bg: #450a0a; --invalid-bd: #b91c1c; --invalid-fg: #fca5a5;
+    --shadow-card: 0 25px 50px -12px rgba(0,0,0,0.6);
+    --match-border: #3b82f6;
+    --history-item-bg: #0f172a;
+    --history-item-bd: #1e293b;
+    --scroll-thumb: #334155;
+  }
+
+  html[data-theme="day"] {
+    --bg-page: #e2e8f0;
+    --bg-card: #ffffff;
+    --bg-inset: #f1f5f9;
+    --bg-inset-alt: #e2e8f0;
+    --bg-elevated: #cbd5e1;
+    --bg-elevated-hover: #b6c2d1;
+    --border-subtle: #cbd5e1;
+    --border-strong: #94a3b8;
+    --text-primary: #0f172a;
+    --text-secondary: #475569;
+    --text-muted: #64748b;
+    --text-faint: #94a3b8;
+    --accent: #2563eb;
+    --accent-soft: #1e40af;
+    --accent-glow: rgba(37, 99, 235, 0.18);
+    --value-ft: #1e40af;
+    --value-ft-unit: #3b82f6;
+    --value-fl: #1e40af;
+    --value-dash: #94a3b8;
+    --west-bg: #fef3c7; --west-fg: #92400e; --west-bd: #f59e0b;
+    --east-bg: #d1fae5; --east-fg: #065f46; --east-bd: #10b981;
+    --none-bg: #e2e8f0; --none-fg: #475569; --none-bd: #cbd5e1;
+    --invalid-bg: #fef2f2; --invalid-bd: #ef4444; --invalid-fg: #b91c1c;
+    --shadow-card: 0 20px 40px -12px rgba(15, 23, 42, 0.18);
+    --match-border: #2563eb;
+    --history-item-bg: #f8fafc;
+    --history-item-bd: #e2e8f0;
+    --scroll-thumb: #cbd5e1;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+  html, body { height: 100%; overscroll-behavior: none; }
+  body {
+    font-family: -apple-system, system-ui, 'Segoe UI', Roboto, sans-serif;
+    background: var(--bg-page);
+    min-height: 100vh;
+    min-height: 100dvh;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+    color: var(--text-primary);
+    -webkit-text-size-adjust: 100%;
+    transition: background-color 0.25s ease, color 0.25s ease;
+  }
+  .card {
+    background: var(--bg-card);
+    width: 100%;
+    max-width: 1000px;
+    border-radius: clamp(16px, 2.5vw, 32px);
+    box-shadow: var(--shadow-card);
+    padding: clamp(1.2rem, 3vw, 2.5rem);
+    border: 1px solid var(--border-subtle);
+    margin: clamp(0.5rem, 2vh, 2rem) clamp(0.5rem, 2vw, 2rem);
+    transition: background-color 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease;
+  }
+
+  .head-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+  }
+  h1 {
+    font-size: clamp(1.3rem, 2.4vw, 1.9rem);
+    font-weight: 600;
+    color: var(--text-primary);
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    transition: color 0.25s ease;
+  }
+
+  /* theme toggle */
+  .theme-toggle {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    background: var(--bg-inset);
+    border: 1px solid var(--border-subtle);
+    border-radius: 40px;
+    padding: 0.25rem;
+    cursor: pointer;
+    user-select: none;
+    transition: background-color 0.25s ease, border-color 0.25s ease;
+  }
+  .theme-toggle .seg {
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+    padding: 0.4rem 0.85rem;
+    border-radius: 30px;
+    font-size: clamp(0.7rem, 1.1vw, 0.8rem);
+    font-weight: 600;
+    letter-spacing: 0.3px;
+    color: var(--text-secondary);
+    transition: background-color 0.2s ease, color 0.2s ease;
+    white-space: nowrap;
+  }
+  .theme-toggle .seg.active {
+    background: var(--bg-elevated);
+    color: var(--text-primary);
+    box-shadow: 0 1px 3px rgba(0,0,0,0.15);
+  }
+  .theme-toggle .seg svg { width: 1em; height: 1em; }
+
+  .subhead {
+    color: var(--text-secondary);
+    font-size: clamp(0.8rem, 1.3vw, 1rem);
+    margin-top: 0.35rem;
+    margin-bottom: clamp(1rem, 2.5vh, 1.75rem);
+    border-left: 3px solid var(--accent);
+    padding-left: 0.9rem;
+    transition: color 0.25s ease, border-color 0.25s ease;
+  }
+  .input-wrap {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: var(--bg-inset);
+    border: 2px solid var(--border-subtle);
+    border-radius: 60px;
+    padding: 0.3rem 0.3rem 0.3rem clamp(0.8rem, 2vw, 1.3rem);
+    margin-bottom: clamp(1rem, 2.5vh, 1.75rem);
+    transition: border-color 0.15s, background-color 0.25s ease;
+  }
+  .input-wrap:focus-within { border-color: var(--accent); }
+  .input-wrap.invalid { border-color: #ef4444; }
+  .input-wrap label {
+    font-size: clamp(0.7rem, 1.1vw, 0.85rem);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--text-muted);
+    font-weight: 600;
+    white-space: nowrap;
+    transition: color 0.25s ease;
+  }
+  .input-wrap input {
+    flex: 1;
+    background: transparent;
+    border: none;
+    outline: none;
+    color: var(--text-primary);
+    font-size: clamp(1.3rem, 2.6vw, 2rem);
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+    padding: 0.5rem;
+    min-width: 0;
+    transition: color 0.25s ease;
+  }
+  .input-wrap input::placeholder { color: var(--text-faint); font-weight: 400; font-size: clamp(1rem, 1.8vw, 1.3rem); }
+  .input-wrap .unit {
+    background: var(--bg-elevated);
+    color: var(--text-primary);
+    padding: clamp(0.3rem, 0.8vw, 0.4rem) clamp(0.9rem, 1.8vw, 1.4rem);
+    border-radius: 40px;
+    font-weight: 600;
+    font-size: clamp(0.9rem, 1.4vw, 1.1rem);
+    transition: background-color 0.25s ease, color 0.25s ease;
+  }
+  input[type=number]::-webkit-outer-spin-button,
+  input[type=number]::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+  input[type=number] { -moz-appearance: textfield; appearance: textfield; }
+
+  /* clear (x) button inside input */
+  .clear-input-btn {
+    background: transparent;
+    border: none;
+    color: var(--text-muted);
+    font-size: clamp(1.2rem, 2vw, 1.5rem);
+    line-height: 1;
+    width: clamp(2rem, 3.5vw, 2.4rem);
+    height: clamp(2rem, 3.5vw, 2.4rem);
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.15s, color 0.15s;
+    flex-shrink: 0;
+  }
+  .clear-input-btn:hover { background: var(--bg-elevated); color: var(--text-primary); }
+  .clear-input-btn:active { transform: scale(0.9); }
+  .clear-input-btn.hidden { visibility: hidden; }
+
+  /* Single result card */
+  .result-card {
+    background: var(--bg-inset);
+    border-radius: clamp(14px, 2vw, 20px);
+    border: 1px solid var(--border-subtle);
+    padding: clamp(1rem, 2.2vw, 1.6rem);
+    transition: opacity 0.15s, border-color 0.15s, background-color 0.25s ease;
+  }
+  .result-card.empty { opacity: 0.45; }
+  .result-card.matched { border-color: var(--match-border); }
+
+  .row-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: clamp(0.7rem, 1.5vh, 1rem);
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+  .dir-badge {
+    font-size: clamp(0.6rem, 1vw, 0.75rem);
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+    padding: 0.3rem 0.8rem;
+    border-radius: 30px;
+    transition: background-color 0.25s ease, color 0.25s ease, border-color 0.25s ease;
+  }
+  .dir-badge.west { background: var(--west-bg); color: var(--west-fg); border: 1px solid var(--west-bd); }
+  .dir-badge.east { background: var(--east-bg); color: var(--east-fg); border: 1px solid var(--east-bd); }
+  .dir-badge.none { background: var(--none-bg); color: var(--none-fg); border: 1px solid var(--none-bd); }
+
+  .track-info {
+    font-size: clamp(0.65rem, 1vw, 0.78rem);
+    font-weight: 600;
+    color: var(--text-secondary);
+    letter-spacing: 0.4px;
+    background: var(--bg-inset-alt);
+    padding: 0.25rem 0.8rem;
+    border-radius: 30px;
+    border: 1px solid var(--border-subtle);
+    transition: background-color 0.25s ease, color 0.25s ease, border-color 0.25s ease;
+  }
+  .track-info strong { color: var(--text-primary); font-weight: 700; }
+
+  .data-row { display: flex; flex-wrap: wrap; gap: clamp(1rem, 2vw, 1.5rem) clamp(1.5rem, 4vw, 3rem); }
+  .field { display: flex; flex-direction: column; min-width: clamp(100px, 18vw, 150px); }
+  .field-label {
+    font-size: clamp(0.6rem, 1vw, 0.75rem);
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    color: var(--text-muted);
+    font-weight: 600;
+    margin-bottom: 0.25rem;
+    transition: color 0.25s ease;
+  }
+  .field-value {
+    font-size: clamp(2rem, 5vw, 3.5rem);
+    font-weight: 700;
+    color: var(--value-ft);
+    font-variant-numeric: tabular-nums;
+    line-height: 1.1;
+    text-shadow: 0 0 24px var(--accent-glow);
+    transition: color 0.25s ease, text-shadow 0.25s ease;
+  }
+  .field-value .ft { font-size: clamp(0.9rem, 1.7vw, 1.4rem); color: var(--value-ft-unit); font-weight: 500; margin-left: 4px; }
+  .field-value.fl { font-size: clamp(1.8rem, 4.3vw, 3rem); color: var(--value-fl); }
+  .field-value.dash { font-size: clamp(2rem, 5vw, 3.5rem); color: var(--value-dash); text-shadow: none; }
+
+  /* invalid notice */
+  .invalid-notice {
+    display: none;
+    margin-top: clamp(0.7rem, 1.5vh, 1rem);
+    padding: clamp(0.7rem, 1.5vw, 1rem) clamp(1rem, 2vw, 1.3rem);
+    border-radius: 16px;
+    background: var(--invalid-bg);
+    border: 1px solid var(--invalid-bd);
+    color: var(--invalid-fg);
+    font-weight: 600;
+    font-size: clamp(0.85rem, 1.4vw, 1rem);
+    text-align: center;
+    letter-spacing: 0.3px;
+    transition: background-color 0.25s ease, color 0.25s ease, border-color 0.25s ease;
+  }
+  .invalid-notice.show { display: block; }
+
+  /* notes section */
+  .notes-panel {
+    margin-top: clamp(1rem, 2.5vh, 1.6rem);
+    border-top: 1px solid var(--border-subtle);
+    padding-top: clamp(0.9rem, 2vh, 1.3rem);
+    transition: border-color 0.25s ease;
+  }
+  .notes-title {
+    font-size: clamp(0.65rem, 1.1vw, 0.78rem);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--text-muted);
+    font-weight: 700;
+    margin-bottom: 0.6rem;
+    transition: color 0.25s ease;
+  }
+  .notes-area {
+    width: 100%;
+    background: var(--bg-inset);
+    border: 1px solid var(--border-subtle);
+    border-radius: 14px;
+    color: var(--text-primary);
+    font-family: inherit;
+    font-size: clamp(0.8rem, 1.3vw, 0.95rem);
+    line-height: 1.5;
+    padding: clamp(0.6rem, 1.5vw, 0.9rem) clamp(0.8rem, 2vw, 1rem);
+    resize: vertical;
+    min-height: clamp(5.5rem, 12vh, 8rem);
+    outline: none;
+    transition: border-color 0.15s, background-color 0.25s ease, color 0.25s ease;
+  }
+  .notes-area:focus { border-color: var(--accent); }
+  .notes-area::placeholder { color: var(--text-faint); }
+
+  /* history panel */
+  .history-panel {
+    margin-top: clamp(1rem, 2.5vh, 1.6rem);
+    border-top: 1px solid var(--border-subtle);
+    padding-top: clamp(0.9rem, 2vh, 1.3rem);
+    transition: border-color 0.25s ease;
+  }
+  .history-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 0.75rem;
+  }
+  .history-title {
+    font-size: clamp(0.65rem, 1.1vw, 0.78rem);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--text-muted);
+    font-weight: 700;
+    transition: color 0.25s ease;
+  }
+  .clear-btn {
+    background: var(--bg-elevated);
+    color: var(--text-primary);
+    border: 1px solid var(--border-strong);
+    border-radius: 30px;
+    padding: clamp(0.3rem, 0.8vw, 0.4rem) clamp(0.9rem, 1.8vw, 1.1rem);
+    font-size: clamp(0.7rem, 1.1vw, 0.8rem);
+    font-weight: 600;
+    letter-spacing: 0.4px;
+    cursor: pointer;
+    transition: background 0.15s, color 0.15s, border-color 0.25s ease;
+    min-height: 44px;
+  }
+  .clear-btn:hover { background: var(--bg-elevated-hover); }
+  .clear-btn:active { transform: scale(0.97); }
+  .clear-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+  .history-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+    max-height: clamp(10rem, 30vh, 16rem);
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  .history-list::-webkit-scrollbar { width: 8px; }
+  .history-list::-webkit-scrollbar-thumb { background: var(--scroll-thumb); border-radius: 8px; }
+
+  .history-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    background: var(--history-item-bg);
+    border: 1px solid var(--history-item-bd);
+    border-radius: 12px;
+    padding: clamp(0.5rem, 1vw, 0.65rem) clamp(0.7rem, 1.5vw, 1rem);
+    font-size: clamp(0.78rem, 1.2vw, 0.9rem);
+    animation: fadeIn 0.2s ease;
+    transition: background-color 0.25s ease, border-color 0.25s ease;
+  }
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-3px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .history-metre {
+    font-weight: 700;
+    color: var(--value-ft);
+    font-variant-numeric: tabular-nums;
+    min-width: clamp(60px, 10vw, 85px);
+    transition: color 0.25s ease;
+  }
+  .history-metre .m { font-size: 0.7rem; color: var(--text-muted); font-weight: 500; margin-left: 2px; }
+  .history-detail {
+    flex: 1;
+    color: var(--text-secondary);
+    font-size: clamp(0.7rem, 1.1vw, 0.82rem);
+    font-variant-numeric: tabular-nums;
+    transition: color 0.25s ease;
+  }
+  .history-detail .fl { color: var(--value-fl); font-weight: 600; }
+  .history-time {
+    color: var(--text-muted);
+    font-size: clamp(0.6rem, 1vw, 0.72rem);
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+    letter-spacing: 0.2px;
+    transition: color 0.25s ease;
+  }
+  .history-empty {
+    text-align: center;
+    color: var(--text-faint);
+    font-size: clamp(0.75rem, 1.2vw, 0.85rem);
+    font-style: italic;
+    padding: 1rem 0;
+    transition: color 0.25s ease;
+  }
+
+  .hint {
+    margin-top: 1rem;
+    text-align: center;
+    font-size: clamp(0.7rem, 1.1vw, 0.82rem);
+    color: var(--text-muted);
+    transition: color 0.25s ease;
+  }
+  .hint .w { color: var(--west-fg); }
+  .hint .e { color: var(--east-fg); }
+
+  /* two-column layout for iPad landscape */
+  @media (min-width: 820px) and (orientation: landscape) {
+    .card {
+      max-width: 1100px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      grid-template-areas:
+        "head head"
+        "sub sub"
+        "input input"
+        "result notes"
+        "history history";
+      column-gap: clamp(1.2rem, 3vw, 2.5rem);
+      row-gap: 0;
+    }
+    .head-row { grid-area: head; }
+    .subhead { grid-area: sub; margin-bottom: 1rem; }
+    .input-wrap { grid-area: input; }
+    .invalid-notice { grid-area: input; align-self: end; margin-top: 0.5rem; }
+    .result-card { grid-area: result; }
+    .notes-panel { grid-area: notes; margin-top: 0; border-top: none; padding-top: 0; }
+    .notes-panel .notes-area { min-height: clamp(7rem, 18vh, 12rem); }
+    .history-panel { grid-area: history; }
+  }
+
+  @media (max-width: 480px) {
+    .data-row { gap: 0.8rem 1.5rem; }
+    .field { min-width: 90px; }
+  }
+</style>
+</head>
+<body>
+<div class="card">
+  <div class="head-row">
+    <h1>✈️ China Metric Table</h1>
+    <div class="theme-toggle" id="themeToggle" role="switch" aria-label="Toggle day/night theme" tabindex="0">
+      <div class="seg" id="segDay" data-theme="day">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg>
+        Day
+      </div>
+      <div class="seg" id="segNight" data-theme="night">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+        Night
+      </div>
+    </div>
+  </div>
+  <div class="subhead">Type an exact metre value from the table to display the Feet &amp; FL with track info.</div>
+
+  <div class="input-wrap" id="inputWrap">
+    <label for="metreInput">Metres</label>
+    <input type="number" id="metreInput" placeholder="e.g. 8400" min="0" step="1" autofocus inputmode="numeric">
+    <button class="clear-input-btn hidden" id="clearInputBtn" type="button" title="Clear input" aria-label="Clear input">×</button>
+    <div class="unit">m</div>
+  </div>
+
+  <div class="invalid-notice" id="invalidNotice">⚠️ Incorrect Metre or refer to Chart</div>
+
+  <!-- SINGLE RESULT CARD -->
+  <div class="result-card empty" id="resultCard">
+    <div class="row-head">
+      <span class="dir-badge none" id="dirBadge">No track</span>
+      <span class="track-info" id="trackInfo" style="display:none"></span>
+    </div>
+    <div class="data-row">
+      <div class="field">
+        <span class="field-label">Feet</span>
+        <span class="field-value dash" id="feetValue">—</span>
+      </div>
+      <div class="field" id="flField">
+        <span class="field-label">Flight level</span>
+        <span class="field-value dash" id="flValue">—</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- NOTES SECTION -->
+  <div class="notes-panel">
+    <div class="notes-title">Additional notes and Clearances</div>
+    <textarea
+      class="notes-area"
+      id="notesArea"
+      rows="5"
+      maxlength="500"
+      placeholder="Write your additional notes and clearances here..."></textarea>
+  </div>
+
+  <!-- HISTORY PANEL -->
+  <div class="history-panel">
+    <div class="hint" style="margin-top: 0; margin-bottom: 0.9rem;">
+      <span class="w">■</span> West (180–359°) &nbsp;•&nbsp; <span class="e">■</span> East (0–179°) &nbsp;•&nbsp; "N/A" when FL not listed
+    </div>
+    <div class="history-head">
+      <span class="history-title">Recent valid metres (UTC) — last 10</span>
+      <button class="clear-btn" id="clearHistoryBtn" type="button">Clear</button>
+    </div>
+    <div class="history-list" id="historyList">
+      <div class="history-empty">No entries yet</div>
+    </div>
+  </div>
+</div>
+
+<script>
+(function () {
+  // ---- THEME HANDLING ----
+  const root = document.documentElement;
+  const themeToggle = document.getElementById('themeToggle');
+  const segDay = document.getElementById('segDay');
+  const segNight = document.getElementById('segNight');
+  const themeColorMeta = document.querySelector('meta[name="theme-color"]');
+
+  function applyTheme(theme) {
+    root.setAttribute('data-theme', theme);
+    segDay.classList.toggle('active', theme === 'day');
+    segNight.classList.toggle('active', theme === 'night');
+    if (themeColorMeta) {
+      themeColorMeta.setAttribute('content', theme === 'day' ? '#e2e8f0' : '#0f172a');
+    }
+    try { localStorage.setItem('metreTheme', theme); } catch (e) { /* ignore */ }
+  }
+
+  function initTheme() {
+    let saved = null;
+    try { saved = localStorage.getItem('metreTheme'); } catch (e) { /* ignore */ }
+    if (saved === 'day' || saved === 'night') {
+      applyTheme(saved);
+    } else {
+      // Respect system preference on first load
+      const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+      applyTheme(prefersDark ? 'night' : 'day');
+    }
+  }
+
+  function toggleTheme() {
+    const current = root.getAttribute('data-theme') === 'day' ? 'day' : 'night';
+    applyTheme(current === 'day' ? 'night' : 'day');
+  }
+
+  themeToggle.addEventListener('click', toggleTheme);
+  themeToggle.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggleTheme(); }
+  });
+
+  initTheme();
+
+  // ---- WEST table (Track 180-359) ----
+  const westTable = [
+    { m: 12200, ft: 40100, fl: 'FL 401' },
+    { m: 11600, ft: 38100, fl: 'FL 381' },
+    { m: 11000, ft: 36100, fl: 'FL 361' },
+    { m: 10400, ft: 34100, fl: 'FL 341' },
+    { m: 9800,  ft: 32100, fl: 'FL 321' },
+    { m: 9200,  ft: 30100, fl: 'FL 301' },
+    { m: 8400,  ft: 27600, fl: 'FL 276' },
+    { m: 7800,  ft: 25600, fl: 'FL 256' },
+    { m: 7200,  ft: 23600, fl: 'FL 236' },
+    { m: 6600,  ft: 21700, fl: 'FL 217' },
+    { m: 6000,  ft: 19700, fl: 'FL 197' },
+    { m: 5400,  ft: 17700, fl: 'FL 177' },
+    { m: 4800,  ft: 15700, fl: 'FL 157' },
+    { m: 4200,  ft: 13800, fl: 'FL 138' },
+    { m: 3600,  ft: 11800, fl: 'FL 118' },
+    { m: 3000,  ft: 9800,  fl: null },
+    { m: 2400,  ft: 7900,  fl: null },
+    { m: 1800,  ft: 5900,  fl: null },
+    { m: 1200,  ft: 3900,  fl: null },
+    { m: 600,   ft: 2000,  fl: null }
+  ];
+
+  // ---- EAST table (Track 0-179) ----
+  const eastTable = [
+    { m: 12500, ft: 41100, fl: 'FL 411' },
+    { m: 11900, ft: 39100, fl: 'FL 391' },
+    { m: 11300, ft: 37100, fl: 'FL 371' },
+    { m: 10700, ft: 35100, fl: 'FL 351' },
+    { m: 10100, ft: 33100, fl: 'FL 331' },
+    { m: 9500,  ft: 31100, fl: 'FL 311' },
+    { m: 8900,  ft: 29100, fl: 'FL 291' },
+    { m: 8100,  ft: 26600, fl: 'FL 266' },
+    { m: 7500,  ft: 24600, fl: 'FL 246' },
+    { m: 6900,  ft: 22600, fl: 'FL 226' },
+    { m: 6300,  ft: 20700, fl: 'FL 207' },
+    { m: 5700,  ft: 18700, fl: 'FL 187' },
+    { m: 5100,  ft: 16700, fl: 'FL 167' },
+    { m: 4500,  ft: 14800, fl: 'FL 148' },
+    { m: 3900,  ft: 12800, fl: 'FL 128' },
+    { m: 3300,  ft: 10800, fl: null },
+    { m: 2700,  ft: 8900,  fl: null },
+    { m: 2100,  ft: 6900,  fl: null },
+    { m: 1500,  ft: 4900,  fl: null },
+    { m: 900,   ft: 3000,  fl: null }
+  ];
+
+  const westMap = new Map(westTable.map(r => [r.m, r]));
+  const eastMap = new Map(eastTable.map(r => [r.m, r]));
+
+  // DOM refs
+  const input        = document.getElementById('metreInput');
+  const inputWrap    = document.getElementById('inputWrap');
+  const clearInputBtn= document.getElementById('clearInputBtn');
+  const invalidNote  = document.getElementById('invalidNotice');
+  const resultCard   = document.getElementById('resultCard');
+  const dirBadge     = document.getElementById('dirBadge');
+  const trackInfo    = document.getElementById('trackInfo');
+  const feetValue    = document.getElementById('feetValue');
+  const flField      = document.getElementById('flField');
+  const flValue      = document.getElementById('flValue');
+  const historyList  = document.getElementById('historyList');
+  const clearBtn     = document.getElementById('clearHistoryBtn');
+  const notesArea    = document.getElementById('notesArea');
+
+  // ---- NOTES PERSISTENCE ----
+  try {
+    const savedNotes = localStorage.getItem('metreNotes');
+    if (savedNotes) notesArea.value = savedNotes;
+  } catch (e) { /* ignore */ }
+
+  notesArea.addEventListener('input', () => {
+    try { localStorage.setItem('metreNotes', notesArea.value); } catch (e) { /* ignore */ }
+  });
+
+  // ---- HISTORY STATE ----
+  const MAX_HISTORY = 10;
+  let history = [];
+  let lastLoggedMetre = null;
+
+  try {
+    const saved = localStorage.getItem('metreHistory');
+    if (saved) history = JSON.parse(saved) || [];
+  } catch (e) { history = []; }
+
+  function saveHistory() {
+    try {
+      localStorage.setItem('metreHistory', JSON.stringify(history));
+    } catch (e) { /* ignore */ }
+  }
+
+  function formatUTC(iso) {
+    const d = new Date(iso);
+    const pad = n => String(n).padStart(2, '0');
+    return (
+      d.getUTCFullYear() + '-' +
+      pad(d.getUTCMonth() + 1) + '-' +
+      pad(d.getUTCDate()) + ' ' +
+      pad(d.getUTCHours()) + ':' +
+      pad(d.getUTCMinutes()) + ':' +
+      pad(d.getUTCSeconds()) + ' UTC'
+    );
+  }
+
+  function renderHistory() {
+    if (!history.length) {
+      historyList.innerHTML = '<div class="history-empty">No entries yet</div>';
+      clearBtn.disabled = true;
+      return;
+    }
+    clearBtn.disabled = false;
+    historyList.innerHTML = '';
+    history.forEach(entry => {
+      const item = document.createElement('div');
+      item.className = 'history-item';
+
+      const metre = document.createElement('span');
+      metre.className = 'history-metre';
+      metre.innerHTML = entry.m.toLocaleString() + '<span class="m">m</span>';
+
+      const detail = document.createElement('span');
+      detail.className = 'history-detail';
+      const flHtml = entry.fl
+        ? ' · <span class="fl">' + entry.fl + '</span>'
+        : '';
+      detail.innerHTML = entry.direction.toUpperCase() + ' · ' +
+        entry.ft.toLocaleString() + ' ft' + flHtml;
+
+      const time = document.createElement('span');
+      time.className = 'history-time';
+      time.textContent = formatUTC(entry.timestamp);
+
+      item.appendChild(metre);
+      item.appendChild(detail);
+      item.appendChild(time);
+      historyList.appendChild(item);
+    });
+  }
+
+  function addToHistory(m, entry, direction, trackText) {
+    if (lastLoggedMetre === m) return;
+    lastLoggedMetre = m;
+
+    history.unshift({
+      m: m,
+      ft: entry.ft,
+      fl: entry.fl,
+      direction: direction,
+      trackText: trackText,
+      timestamp: new Date().toISOString()
+    });
+    if (history.length > MAX_HISTORY) history.length = MAX_HISTORY;
+    saveHistory();
+    renderHistory();
+  }
+
+  function resetCard() {
+    resultCard.classList.add('empty');
+    resultCard.classList.remove('matched');
+    dirBadge.className = 'dir-badge none';
+    dirBadge.textContent = 'No track';
+    trackInfo.style.display = 'none';
+    feetValue.className = 'field-value dash';
+    feetValue.textContent = '—';
+    flField.style.display = 'flex';
+    flValue.className = 'field-value dash';
+    flValue.textContent = '—';
+  }
+
+  function updateClearInputBtn() {
+    if (input.value.trim() === '') {
+      clearInputBtn.classList.add('hidden');
+    } else {
+      clearInputBtn.classList.remove('hidden');
+    }
+  }
+
+  function render() {
+    updateClearInputBtn();
+
+    const raw = input.value.trim();
+    const m = raw === '' ? null : Number(raw);
+    const valid = m !== null && Number.isInteger(m) && m >= 0;
+
+    if (!valid) {
+      resetCard();
+      invalidNote.classList.remove('show');
+      inputWrap.classList.remove('invalid');
+      lastLoggedMetre = null;
+      return;
+    }
+
+    const w = westMap.get(m);
+    const e = eastMap.get(m);
+
+    let entry = null;
+    let direction = null;
+    let trackText = '';
+
+    if (w) {
+      entry = w;
+      direction = 'west';
+      trackText = '180–359° (West)';
+    } else if (e) {
+      entry = e;
+      direction = 'east';
+      trackText = '0–179° (East)';
+    }
+
+    if (entry) {
+      resultCard.classList.remove('empty');
+      resultCard.classList.add('matched');
+      dirBadge.className = 'dir-badge ' + direction;
+      dirBadge.textContent = direction === 'west' ? 'West' : 'East';
+      trackInfo.innerHTML = 'Track: <strong>' + trackText + '</strong>';
+      trackInfo.style.display = 'inline-block';
+
+      feetValue.className = 'field-value';
+      feetValue.innerHTML = entry.ft.toLocaleString() + ' <span class="ft">ft</span>';
+
+      if (entry.fl) {
+        flField.style.display = 'flex';
+        flValue.className = 'field-value fl';
+        flValue.textContent = entry.fl;
+      } else {
+        flField.style.display = 'none';
+      }
+
+      invalidNote.classList.remove('show');
+      inputWrap.classList.remove('invalid');
+
+      addToHistory(m, entry, direction, trackText);
+    } else {
+      resetCard();
+      invalidNote.classList.add('show');
+      inputWrap.classList.add('invalid');
+      lastLoggedMetre = null;
+    }
+  }
+
+  clearBtn.addEventListener('click', () => {
+    history = [];
+    lastLoggedMetre = null;
+    saveHistory();
+    renderHistory();
+  });
+
+  clearInputBtn.addEventListener('click', () => {
+    input.value = '';
+    lastLoggedMetre = null;
+    render();
+    input.focus();
+  });
+
+  input.addEventListener('input', render);
+
+  window.addEventListener('load', () => {
+    input.focus();
+    renderHistory();
+    render();
+  });
+
+  document.addEventListener('dblclick', e => e.preventDefault(), { passive: false });
+})();
+</script>
+</body>
+</html>
